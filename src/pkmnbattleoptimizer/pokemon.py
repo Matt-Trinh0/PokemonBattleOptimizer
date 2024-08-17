@@ -11,3 +11,4 @@ class Pokemon:
         self.moves = []
         self.status = None
         self.current_hp = 1
+        self.tera_type = None

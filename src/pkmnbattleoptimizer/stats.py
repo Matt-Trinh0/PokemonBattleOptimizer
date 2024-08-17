@@ -4,7 +4,7 @@ from enum import Enum
 from nature import Nature
 
 
-class BaseStatType(Enum):
+class StatType(Enum):
     HP = 0
     ATTACK = 1
     DEFENSE = 2
@@ -13,54 +13,51 @@ class BaseStatType(Enum):
     SPEED = 5
 
 
-class BaseStat:
-    def __init__(self, value: int, stat_type: BaseStatType):
+class Stat:
+    def __init__(
+        self,
+        value: int,
+        min_value: int,
+        max_value: int,
+        stat_type: StatType,
+        name: str = "stat",
+    ):
         self._value = value
-        self._stat_type = stat_type
+        self._min_value = min_value
+        self._max_value = max_value
+        self._state_type = stat_type
+        self._name = name
 
     @property
     def value(self):
         return self._value
+
+    @value.setter
+    def value(self, value: int):
+        if value < self._min_value or value > self._max_value:
+            raise ValueError(
+                f"A {self._name} must be between {self._min_value} and {self._max_value}. Got {value}"
+            )
+        self._value = value
 
     @property
     def stat_type(self):
         return self._stat_type
 
-    @value.setter
-    def value(self, value: int):
-        if value < 0 or value > 255:
-            raise ValueError(f"A base stat must be between 0 and 255. Got {value}")
-        self._value = value
+
+class BaseStat(Stat):
+    def __init__(self, value: int, stat_type: StatType):
+        super().__init__(value, 0, 255, stat_type, "base stat")
 
 
-class IndividualValue:
-    def __init__(self, value: int):
-        self._value = value
-
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
-    def value(self, value: int):
-        if value < 0 or value > 31:
-            raise ValueError(
-                f"An individual value must be between 0 and 31. Got {value}"
-            )
+class IndividualValue(Stat):
+    def __init__(self, value: int, stat_type: StatType):
+        super().__init__(value, 0, 31, stat_type, "individual value")
 
 
-class EffortValue:
-    def __init__(self, value: int):
-        self._value = value
-
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
-    def value(self, value: int):
-        if value < 0 or value > 255:
-            raise ValueError(f"An effort value must be between 0 and 255. Got {value}")
+class EffortValue(Stat):
+    def __init__(self, value: int, stat_type: StatType):
+        super().__init__(value, 0, 255, stat_type, "effort value")
 
 
 class EffectiveStat:
@@ -97,7 +94,7 @@ class EffectiveStat:
             / 100
         )
 
-        if base_stat.stat_type == BaseStatType.HP:
+        if base_stat.stat_type == StatType.HP:
             no_mod_stat = base_term + level + 10
         else:
             no_mod_stat = floor(
